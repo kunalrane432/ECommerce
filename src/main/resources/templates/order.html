@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Confirmation</title>
+    <style>
+        
+        .order-container {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .order-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .order-container th, .order-container td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .order-container th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="order-container">
+        <h1>Order Confirmation</h1>
+
+        <p>Thank you for your purchase!</p>
+        <p>Your order ID is: <strong th:text="${order.id}">123456</strong></p>
+       
+
+        <h2>Order Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${order.orderItems}">
+                    <td th:text="${item.productName}">Product Name</td>
+                    <td th:text="${item.quantity}">0</td>
+                    <td>$<span th:text="${item.price}">0.00</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>Total Price: $<span th:text="${order.totalPrice}">0.00</span></p>
+
+        <a href="/">Back to Products</a>
+    </div>
+</body>
+</html>
