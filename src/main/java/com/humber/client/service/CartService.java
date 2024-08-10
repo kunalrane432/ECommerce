@@ -15,18 +15,35 @@ import java.util.Map;
 public class CartService {
 
     private static final String CART_SESSION_ATTRIBUTE = "cartItems";
-    
+
     @Autowired
-    private ProductService productService;
+    private ProductService productService; 
 
     public void addToCart(Long productId, Integer quantity, HttpSession session) {
-        Map<Long, Integer> cartItems = getCartItems(session);
-        cartItems.put(productId, cartItems.getOrDefault(productId, 0) + quantity);
+        Map<Product, Integer> cartItems = getCartItems(session);
+        
+        // Fetch the product by ID
+        Product product = productService.getProductById(productId);
+        if (product == null) {
+            // Handle the case where the product is not found
+            throw new IllegalArgumentException("Product not found");
+        }
+       
+        
+        if (cartItems.containsKey(product)) {
+            
+            cartItems.put(product, cartItems.get(product) + quantity);
+        } else {
+
+            cartItems.put(product, quantity);
+        }
+        
+        // Save the updated cart in the session
         session.setAttribute(CART_SESSION_ATTRIBUTE, cartItems);
     }
 
-    public Map<Long, Integer> getCartItems(HttpSession session) {
-        Map<Long, Integer> cartItems = (Map<Long, Integer>) session.getAttribute(CART_SESSION_ATTRIBUTE);
+    public Map<Product, Integer> getCartItems(HttpSession session) {
+        Map<Product, Integer> cartItems = (Map<Product, Integer>) session.getAttribute(CART_SESSION_ATTRIBUTE);
         if (cartItems == null) {
             cartItems = new HashMap<>();
             session.setAttribute(CART_SESSION_ATTRIBUTE, cartItems);
@@ -35,32 +52,20 @@ public class CartService {
     }
 
     public void removeFromCart(Long productId, HttpSession session) {
-        Map<Long, Integer> cartItems = getCartItems(session);
-        cartItems.remove(productId);
-        session.setAttribute(CART_SESSION_ATTRIBUTE, cartItems);
+        Map<Product, Integer> cartItems = getCartItems(session);
+        Product product = productService.getProductById(productId);
+        if (product != null) {
+            cartItems.remove(product);
+            session.setAttribute(CART_SESSION_ATTRIBUTE, cartItems);
+        }
     }
 
-    public BigDecimal calculateTotalPrice(Map<Long, Integer> cartItems) {
+    public BigDecimal calculateTotalPrice(Map<Product, Integer> cartItems) {
         BigDecimal totalPrice = BigDecimal.ZERO;
-        for (Map.Entry<Long, Integer> entry : cartItems.entrySet()) {
-            Product product = findProductById(entry.getKey()); // Replace with actual product fetching logic
-            BigDecimal price = product.getPrice().multiply(BigDecimal.valueOf(entry.getValue()));
+        for (Map.Entry<Product, Integer> entry : cartItems.entrySet()) {
+            BigDecimal price = entry.getKey().getPrice().multiply(BigDecimal.valueOf(entry.getValue()));
             totalPrice = totalPrice.add(price);
         }
         return totalPrice;
     }
-
-    private Map<Product, Integer> convertToProductMap(Map<Long, Integer> cartItems) {
-        Map<Product, Integer> productCartItems = new HashMap<>();
-        for (Map.Entry<Long, Integer> entry : cartItems.entrySet()) {
-            Product product = findProductById(entry.getKey()); // Replace with actual product fetching logic
-            productCartItems.put(product, entry.getValue());
-        }
-        return productCartItems;
-    }
-
-    private Product findProductById(Long productId) {
-        return productService.getProductById(productId);
-    }
 }
-

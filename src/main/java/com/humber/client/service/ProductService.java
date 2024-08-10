@@ -20,6 +20,7 @@ public class ProductService {
  private final RestTemplate restTemplate = new RestTemplate();
 
  public List<Product> getAllProducts() {
+	 System.out.println(productServiceUrl+"productServiceUrl");
      return Arrays.asList(restTemplate.getForObject(productServiceUrl, Product[].class));
  }
 

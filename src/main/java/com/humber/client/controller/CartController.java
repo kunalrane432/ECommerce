@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.humber.client.model.Product;
 import com.humber.client.service.CartService;
 
 import jakarta.servlet.http.HttpSession;
@@ -25,7 +26,7 @@ public class CartController {
 
     @GetMapping("/cart")
     public String viewCart(Model model, HttpSession session) {
-    	Map<Long, Integer> cartItems = cartService.getCartItems(session);
+        Map<Product, Integer> cartItems = cartService.getCartItems(session);
         model.addAttribute("cartItems", cartItems);
         model.addAttribute("totalPrice", cartService.calculateTotalPrice(cartItems));
         return "cart";

@@ -19,7 +19,9 @@ public class ProductController {
 
  @GetMapping("/")
  public String index(Model model) {
+	 System.out.println("Default URL for products");
      List<Product> products = productService.getAllProducts();
+     System.out.println(products.get(0).getName());
      model.addAttribute("products", products);
      return "index";
  }

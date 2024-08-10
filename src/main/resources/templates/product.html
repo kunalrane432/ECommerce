@@ -19,7 +19,7 @@
 <body>
     <div class="product-container">
         <h1 th:text="${product.name}">Product Name</h1>
-        <img th:src="@{/images/{id}(id=${product.imageId})}" alt="Product Image"/>
+        <!--<img th:src="@{/images/{id}(id=${product.imageId})}" alt="Product Image"/>-->
         <p th:text="${product.description}">Product Description</p>
         <p>Price: $<span th:text="${product.price}">0.00</span></p>
         <p>Stock: <span th:text="${product.stock}">0</span> available</p>
