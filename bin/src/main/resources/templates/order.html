@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Your Cart</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Calculate and display the total price on page load
+            calculateTotalPrice();
+
+            // Add event listener to the "Place Order" button
+            document.querySelector('#placeOrderButton').addEventListener('click', placeOrder);
+        });
+
+        function calculateTotalPrice() {
+            let totalPrice = 0;
+            document.querySelectorAll('table tbody tr').forEach(row => {
+                const price = parseFloat(row.querySelector('td:nth-child(2)').innerText.replace('$', ''));
+                const quantity = parseInt(row.querySelector('td:nth-child(3)').innerText, 10);
+                totalPrice += price * quantity;
+            });
+            document.querySelector('#totalPrice').innerText = `$${totalPrice.toFixed(2)}`;
+        }
+
+        async function placeOrder() {
+            const cartItems = [];
+            document.querySelectorAll('table tbody tr').forEach(row => {
+                const productId = row.querySelector('input[name="productId"]').value;
+                const quantity = parseInt(row.querySelector('td:nth-child(3)').innerText, 10);
+                if (quantity > 0) {
+                    cartItems.push({
+                        productId: productId,
+                        quantity: quantity
+                    });
+                }
+            });
+
+            if (cartItems.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+
+            const order = {
+                orderDate: new Date().toISOString(), // Optional if your Order object requires it
+                orderItems: cartItems
+            };
+
+            try {
+                const response = await fetch('/api/orders/place', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(order)
+                });
+
+                if (response.ok) {
+                    alert('Order placed successfully!');
+                    window.location.href = '/'; // Redirect to home or confirmation page
+                } else {
+                    const errorMessage = await response.text();
+                    alert('Failed to place order: ' + errorMessage);
+                }
+            } catch (error) {
+                console.error('Error placing order:', error);
+                alert('Error placing order');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Your Shopping Cart</h1>
+
+    <!-- Display Cart Items -->
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Example row; in a real application, rows would be generated dynamically -->
+            <!-- Example static row: -->
+            <tr>
+                <td><input type="hidden" name="productId" value="1" />Product Name</td>
+                <td>$100.00</td>
+                <td>2</td>
+                <td>$200.00</td>
+            </tr>
+            <!-- Add more rows dynamically here -->
+        </tbody>
+    </table>
+
+    <!-- Display Total Price -->
+    <p>Total Price: <span id="totalPrice">$200.00</span></p>
+
+    <!-- Button to place an order -->
+    <button id="placeOrderButton">Place Order</button>
+
+    <!-- Link to go back to the homepage or other pages -->
+    <a href="/">Back to Home</a>
+</body>
+</html>

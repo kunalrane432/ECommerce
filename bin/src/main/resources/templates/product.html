@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Product Details</title>
+    <style>
+   
+        .product-container {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .product-container img {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="product-container">
+        <h1 th:text="${product.name}">Product Name</h1>
+        <!--<img th:src="@{/images/{id}(id=${product.imageId})}" alt="Product Image"/>-->
+        <p th:text="${product.description}">Product Description</p>
+        <p>Price: $<span th:text="${product.price}">0.00</span></p>
+        <p>Stock: <span th:text="${product.stock}">0</span> available</p>
+
+        <form action="/cart" method="post">
+            <input type="hidden" name="productId" th:value="${product.id}"/>
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" min="1" max="${product.stock}" value="1"/>
+            <button type="submit">Add to Cart</button>
+        </form>
+        <a href="/">Back to Products</a>
+    </div>
+</body>
+</html>

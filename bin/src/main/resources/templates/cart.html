@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Your Cart</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('.remove-item-button').forEach(button => {
+                button.addEventListener('click', removeItem);
+            });
+            document.querySelector('#placeOrderButton').addEventListener('click', placeOrder);
+        });
+
+        function calculateTotalPrice() {
+            let totalPrice = 0;
+            document.querySelectorAll('table tbody tr').forEach(row => {
+                const price = parseFloat(row.querySelector('td.price').innerText.replace('$', ''));
+                const quantity = parseInt(row.querySelector('td.quantity input').value, 10);
+                totalPrice += price * quantity;
+            });
+            document.querySelector('#totalPrice').innerText = `$${totalPrice.toFixed(2)}`;
+            return totalPrice;
+        }
+
+        async function placeOrder() {
+            const cartItems = [];
+            let totalPrice = calculateTotalPrice();
+
+            document.querySelectorAll('table tbody tr').forEach(row => {
+                const productId = row.querySelector('input[name="productId"]').value;
+                const quantity = parseInt(row.querySelector('td.quantity input').value, 10);
+                if (quantity > 0) {
+                    cartItems.push({
+                        productId: parseInt(productId, 10),
+                        quantity: quantity
+                    });
+                }
+            });
+
+            if (cartItems.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+
+            const order = {
+                orderDate: new Date().toISOString(),
+                totalPrice: totalPrice,
+                orderItems: cartItems
+            };
+
+            try {
+                const response = await fetch('/api/orders/place', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(order)
+                });
+
+                if (response.ok) {
+                    alert('Order placed successfully!');
+                    window.location.href = '/'; // Redirect to home or confirmation page
+                } else {
+                    const errorMessage = await response.text();
+                    alert('Failed to place order: ' + errorMessage);
+                }
+            } catch (error) {
+                console.error('Error placing order:', error);
+                alert('Error placing order');
+            }
+        }
+
+        async function removeItem(event) {
+            const button = event.target;
+            const row = button.closest('tr');
+            const productId = row.querySelector('input[name="productId"]').value;
+
+            try {
+                const response = await fetch(`/cart/remove?productId=${productId}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    window.location.reload(); // Refresh the page to reflect changes
+                } else {
+                    const errorMessage = await response.text();
+                    alert('Failed to remove item: ' + errorMessage);
+                }
+            } catch (error) {
+                console.error('Error removing item:', error);
+                alert('Error removing item');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Your Shopping Cart</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Thymeleaf will populate this section with cart items -->
+            <tr th:each="item : ${cartItems}">
+                <td>
+                    <input type="hidden" name="productId" th:value="${item.key.id}" />
+                    <span th:text="${item.key.name}">Product Name</span>
+                </td>
+                <td class="price" th:text="${item.key.price}">$0.00</td>
+                <td class="quantity">
+                    <input type="number" min="1" th:value="${item.value}" />
+                </td>
+                <td th:text="${item.key.price * item.value}">$0.00</td>
+                <td>
+                    <button class="remove-item-button">Remove</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Total Price: <span id="totalPrice" th:text="${totalPrice}">$0.00</span></p>
+
+    <button id="placeOrderButton">Place Order</button>
+
+    <a href="/">Back to Home</a>
+</body>
+</html>
