@@ -17,13 +17,6 @@ public class CartController {
 
     @Autowired
     private CartService cartService;
-
-    @PostMapping("/cart")
-    public String addToCart(@RequestParam Long productId, @RequestParam Integer quantity, HttpSession session) {
-        cartService.addToCart(productId, quantity, session);
-        return "redirect:/cart";
-    }
-
     @GetMapping("/cart")
     public String viewCart(Model model, HttpSession session) {
         Map<Product, Integer> cartItems = cartService.getCartItems(session);
@@ -32,9 +25,18 @@ public class CartController {
         return "cart";
     }
 
+  
+
+   
+
     @PostMapping("/cart/remove")
     public String removeFromCart(@RequestParam Long productId, HttpSession session) {
         cartService.removeFromCart(productId, session);
+        return "redirect:/cart";
+    }
+    @PostMapping("/cart")
+    public String addToCart(@RequestParam Long productId, @RequestParam Integer quantity, HttpSession session) {
+        cartService.addToCart(productId, quantity, session);
         return "redirect:/cart";
     }
 }
